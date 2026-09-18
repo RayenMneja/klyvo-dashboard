@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import {gasFixture} from './gas-fixture.mjs';
+function protocol(){const c={};vm.createContext(c);if(fs.existsSync('public/protocol.js'))vm.runInContext(fs.readFileSync('public/protocol.js','utf8'),c);return c.KlyvoProtocol;}
+test('wrong catalogue response is rejected with an actionable error before render',()=>{assert.ok(protocol(),'protocol validator required');assert.throws(()=>protocol().snapshot({products:[]}),/snapshot|administration/i);});
+test('missing warnings is normalized only for a complete legacy admin response',()=>{const f=gasFixture(),data=f.call({action:'snapshot'}).data;delete data.warnings;assert.ok(protocol());assert.equal(protocol().snapshot(data).warnings.length,0);assert.throws(()=>protocol().snapshot({...data,orders:null}),/snapshot|administration/i);assert.throws(()=>protocol().snapshot({...data,warnings:{}}),/warnings/i);});
+test('formula diagnostics identify physical cells and setup does not mutate formulas',()=>{const f=gasFixture();f.add('Products',{'Product ID':'p'});f.sheets.Products.formulas[1]=['=ARRAYFORMULA(...)'];f.ctx.setupKlyvoAdmin();const d=f.call({action:'snapshot'}).data;assert.equal(d.readOnly,true);assert.equal(d.formulaCells[0].cell,'A2');assert.equal(d.formulaCells[0].sheet,'Products');assert.match(d.writeBlockReasons.join(' '),/Products!A2/);assert.ok(f.sheets.Products.formulas[1][0]);});
+test('setup rejects short gateway secret and a deployment ID in SPREADSHEET_ID',()=>{const f=gasFixture();f.props.ADMIN_GATEWAY_SECRET='short';assert.throws(()=>f.ctx.setupKlyvoAdmin(),/32/);f.props.ADMIN_GATEWAY_SECRET='s'.repeat(64);f.props.SPREADSHEET_ID='AKfycb_wrong_deployment';assert.throws(()=>f.ctx.setupKlyvoAdmin(),/SPREADSHEET_ID/);});
+test('default-only variant rows do not produce anonymous orphan warnings',()=>{const f=gasFixture();f.add('Variants',{'Variant Price TND':0,'Variant Stock':0,Active:false});const d=f.call({action:'snapshot'}).data;assert.equal(d.warnings.some(w=>/orpheline|incomplète/.test(w)),false);assert.equal(d.ignoredVariantRows,1);});
+test('pending journal is surfaced as an explicit write block in snapshot',()=>{const f=gasFixture();f.ctx.setupKlyvoAdmin();f.sheets['_Admin Journal'].appendRow(['adm-x','PENDING']);const d=f.call({action:'snapshot'}).data;assert.equal(d.readOnly,true);assert.match(d.writeBlockReasons.join(' '),/réconcilier/);});
+test('signed unauthorized email receives identifiable code, forged signatures remain rejected',()=>{const f=gasFixture();f.props.ADMIN_EMAILS='other@gmail.com';const r=f.call({action:'snapshot'});assert.equal(r.success,false);assert.equal(r.code,'ADMIN_NOT_ALLOWED');});

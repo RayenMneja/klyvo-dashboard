@@ -1,0 +1,46 @@
+
+> klyvo-admin@1.1.0 test
+> node --test tests/*.test.mjs
+
+✔ GAS rejects forged expired and unauthorized signed envelopes (4.094268ms)
+✔ row reader preserves physical row numbers and text zeros (1.119457ms)
+✔ formula guard refuses writes before migration (1.014448ms)
+✔ SKU normalizes accents and avoids collision (1.306401ms)
+✔ image URLs preserve commas and use pipes only (1.237876ms)
+✔ HTML never preserves active attributes and removes outer backticks (0.88418ms)
+✔ variants preserve IDs, inherit price zero and refuse duplicates (0.756717ms)
+✔ analytics uses confirmed history once, includes zero sellers and returning buyers (19.450029ms)
+✔ analytics quarantines conflicting duplicate orders and handles zero denominator (0.590245ms)
+✔ analytics handles category names that overlap object prototypes (0.272002ms)
+✔ gateway refuses storefront data and HTML instead of accepting a successful wrong endpoint (3.579637ms)
+✔ gateway accepts complete admin snapshot and preserves business failure codes (6.416118ms)
+✔ doPost routes signed snapshot to admin while doGet remains public catalogue (3.817227ms)
+✔ wrong catalogue response is rejected with an actionable error before render (4.34626ms)
+✔ missing warnings is normalized only for a complete legacy admin response (8.88448ms)
+✔ formula diagnostics identify physical cells and setup does not mutate formulas (3.867634ms)
+✔ setup rejects short gateway secret and a deployment ID in SPREADSHEET_ID (1.58246ms)
+✔ default-only variant rows do not produce anonymous orphan warnings (1.937958ms)
+✔ pending journal is surfaced as an explicit write block in snapshot (1.904938ms)
+✔ signed unauthorized email receives identifiable code, forged signatures remain rejected (1.561818ms)
+✔ demo server serves local UI but refuses writes and arbitrary files (102.323016ms)
+✔ save and retry writes one product and one variant; IDs immutable on edit (18.852292ms)
+✔ concurrent storefront stock update rejects stale editor revision (4.672384ms)
+✔ historical products archive, nonhistorical delete keeps other physical rows (3.237408ms)
+✔ mid-save failure compensates earlier writes and records rollback (1.823014ms)
+✔ checkout with blank rows decrements correct variant and deduplicates request (3.004916ms)
+✔ pending journal freezes checkout before any inventory changes (1.313732ms)
+✔ deleted highest product ID is never recycled for a new product (2.315531ms)
+✔ empty numeric strings and malformed variants cannot zero stock silently (1.221763ms)
+✔ complete demo snapshot renders dashboard without runtime exceptions (59.154356ms)
+✔ malformed snapshot does not overwrite the last valid UI state (29.040219ms)
+✔ readonly reason remains visible when more than eight warnings exist (46.253777ms)
+✔ backend readonly snapshot is accepted without pretending admin setup is complete (5.120052ms)
+✔ uncertain save retains original request and blocks editing until resolved (23.113493ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 312.528791

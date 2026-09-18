@@ -1,0 +1,47 @@
+--- original/Code.gs
++++ apps-script/Code.gs
+@@ -44,6 +44,11 @@
+ }
+ 
+ function doPost(e) {
++  // Signed administrative requests are isolated from storefront actions.
++  try {
++    const adminBody = JSON.parse(e && e.postData && e.postData.contents || '{}');
++    if (adminBody.action === 'adminGateway') return handleAdminRequest_(adminBody);
++  } catch (ignored) {}
+   if (e && e.parameter && e.parameter.action === 'mailjetAlert') {
+     return handleMailjetAlert_(e);
+   }
+@@ -88,6 +93,7 @@
+   const lock = LockService.getScriptLock();
+   lock.waitLock(15000);
+   try {
++    adminAssertNoPending_();
+     const spreadsheet = getSpreadsheet_();
+     const productsSheet = requiredSheet_(spreadsheet, STORE.sheets.products);
+     const variantsSheet = requiredSheet_(spreadsheet, STORE.sheets.variants);
+@@ -733,7 +739,7 @@
+       sizes: sizes,
+       otherVariants: split_(row['Other Variants']),
+       image: cleanUrl_(row['Main Image URL']),
+-      images: split_(row['Additional Image URLs']).map(cleanUrl_).filter(Boolean),
++      images: String(row['Additional Image URLs'] || '').split('|').map(function (url) { return cleanUrl_(url.trim()); }).filter(Boolean),
+       tags: split_(row['Recommendation Tags']),
+       featured: truthy_(row.Featured),
+       active: true,
+@@ -756,14 +762,7 @@
+ }
+ 
+ function rowsAsObjects_(sheet) {
+-  const values = sheet.getDataRange().getValues();
+-  if (values.length < 2) return [];
+-  const headers = values[0].map(String);
+-  return values.slice(1).filter(function (row) { return row.some(function (cell) { return cell !== ''; }); }).map(function (row, index) {
+-    const object = { __rowNumber: index + 2 };
+-    headers.forEach(function (header, column) { object[header] = row[column]; });
+-    return object;
+-  });
++  return adminObjects_(sheet.getDataRange().getValues());
+ }
+ 
+ function getSpreadsheet_() {
